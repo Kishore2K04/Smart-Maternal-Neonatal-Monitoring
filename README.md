@@ -39,6 +39,20 @@ The system combines:
 4. Real-time web dashboard
 5. Telegram-based emergency notifications
 
+## 📸 Screenshots
+
+### 🟢 Live Monitoring Dashboard
+![Live Monitoring Dashboard](screenshots/dashboard-normal.jpeg)
+
+### 🔴 Abnormal Vital Detection
+![Abnormal Vital Detection](screenshots/dashboard-abnormal.jpeg)
+
+### 🚨 Telegram Health Alert
+![Telegram Health Alert](screenshots/telegram-alert.jpeg)
+
+### ⚠️ Multiple Abnormalities
+![Multiple Abnormalities](screenshots/multiple-abnormalities.jpeg)
+
 ### System Flow
 
 ```text
