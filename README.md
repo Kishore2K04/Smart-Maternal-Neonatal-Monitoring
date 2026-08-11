@@ -55,7 +55,7 @@ The system combines:
 
 ### System Flow
 
-```text
+```
 Simulated IoT Sensors
         │
         ▼
@@ -73,7 +73,10 @@ Realtime DB              │
         │                │
         ▼                ▼
 Live Dashboard      Guardian / ASHA
+
+```
 📊 Monitored Parameters
+```
 
 The prototype monitors:
 
@@ -153,6 +156,7 @@ Patient ID: mother_001
 Patient Type: Mother
 
 Detected Risks:
+
 ⚠️ Low Oxygen Level
 
 Current Readings:
@@ -163,7 +167,10 @@ Urine Protein: Negative
 Bilirubin: 9.2 mg/dL
 
 Time: 2026-08-11 19:18:55
+```
+
 🛠️ Tech Stack
+```
 Frontend
 HTML
 CSS
@@ -177,7 +184,9 @@ Alerting
 Telegram Bot API
 Configuration
 Python-dotenv
+```
 📁 Project Structure
+```
 Smart-Maternal-Neonatal-Monitoring/
 │
 ├── app.py
@@ -196,7 +205,11 @@ Smart-Maternal-Neonatal-Monitoring/
 ├── .env.example
 ├── .gitignore
 └── README.md
+```
+
 ⚙️ Installation
+```
+
 1. Clone the repository
 git clone <YOUR_GITHUB_REPOSITORY_URL>
 cd Smart-Maternal-Neonatal-Monitoring
@@ -227,8 +240,10 @@ The following files contain sensitive information and must never be committed:
 firebase_key.json
 
 They are excluded through .gitignore.
-
+```
 ▶️ Running the Project
+```
+
 Start Flask
 python app.py
 
@@ -242,8 +257,9 @@ In a second terminal:
 python simulator.py
 
 The simulator continuously generates readings and updates Firebase every few seconds.
-
+```
 🔄 Real-Time Monitoring Flow
+```
 1. Simulator generates a reading
              ↓
 2. Risk engine evaluates the reading
@@ -259,7 +275,9 @@ The simulator continuously generates readings and updates Firebase every few sec
 7. Telegram alert is sent
              ↓
 8. Next reading is generated
+```
 ⚠️ Prototype Limitations
+```
 
 This project is a prototype.
 
@@ -274,8 +292,9 @@ Real-time visualization
 Automated alerting
 
 It is not a medical device and does not provide clinical diagnosis or medical advice.
-
+```
 🚀 Future Improvements
+```
 
 Possible future extensions include:
 
@@ -289,13 +308,16 @@ Machine-learning-based risk prediction
 Offline data buffering
 Hardware deployment using ESP32
 Role-based access control
+```
 🏆 Hackathon Context
+```
 
 This prototype originated from a healthcare-focused hackathon project exploring connected maternal and neonatal health monitoring.
 
 The implementation prioritizes demonstrating the complete monitoring pipeline using simulated sensor data, cloud synchronization, real-time visualization, and automated emergency notification.
-
+```
 ⚕️ Disclaimer
+```
 
 This software is intended for educational and prototyping purposes only.
 
