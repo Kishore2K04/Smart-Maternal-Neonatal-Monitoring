@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Smart Maternal & Neonatal Health Monitoring
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+</head>
+
+
+<body>
+
+<div class="container">
+
+
+    <!-- ========================================= -->
+    <!-- HEADER -->
+    <!-- ========================================= -->
+
+    <h1>
+        Smart Maternal & Neonatal Health Monitoring
+    </h1>
+
+    <p class="subtitle">
+        IoT-Based Health Monitoring Prototype
+    </p>
+
+
+    <!-- ========================================= -->
+    <!-- PATIENT DETAILS -->
+    <!-- ========================================= -->
+
+    <div class="patient-form">
+
+        <h2>
+            Patient Details
+        </h2>
+
+
+        <label>
+            Patient ID
+        </label>
+
+        <input
+            type="text"
+            id="patientId"
+            placeholder="Example: mother_001"
+        >
+
+
+        <label>
+            Patient Name
+        </label>
+
+        <input
+            type="text"
+            id="patientName"
+            placeholder="Enter patient name"
+        >
+
+
+        <label>
+            Age
+        </label>
+
+        <input
+            type="number"
+            id="age"
+            placeholder="Enter age"
+        >
+
+
+        <label>
+            Patient Type
+        </label>
+
+        <select id="patientType">
+
+            <option value="Mother">
+                Mother
+            </option>
+
+            <option value="Infant">
+                Infant
+            </option>
+
+        </select>
+
+
+        <button onclick="startMonitoring()">
+            START MONITORING
+        </button>
+
+    </div>
+
+
+    <!-- ========================================= -->
+    <!-- LIVE MONITORING -->
+    <!-- ========================================= -->
+
+    <div
+        id="monitoring"
+        class="monitoring hidden"
+    >
+
+        <h2>
+            Live Health Monitoring
+        </h2>
+
+
+        <p>
+            Patient:
+            <strong id="displayName">-</strong>
+        </p>
+
+
+        <p>
+            Patient ID:
+            <strong id="displayId">-</strong>
+        </p>
+
+
+        <p>
+            Patient Type:
+            <strong id="displayType">-</strong>
+        </p>
+
+
+        <div class="status">
+            🟢 MONITORING
+        </div>
+
+
+        <!-- ================================= -->
+        <!-- VITALS -->
+        <!-- ================================= -->
+
+        <div class="vitals">
+
+
+            <!-- BLOOD PRESSURE -->
+
+            <div
+                class="vital-card"
+                id="bpCard"
+            >
+
+                <h3>
+                    Blood Pressure
+                </h3>
+
+                <p id="bpValue">
+                    -- / -- mmHg
+                </p>
+
+            </div>
+
+
+            <!-- SPO2 -->
+
+            <div
+                class="vital-card"
+                id="spo2Card"
+            >
+
+                <h3>
+                    SpO₂
+                </h3>
+
+                <p id="spo2Value">
+                    -- %
+                </p>
+
+            </div>
+
+
+            <!-- PROTEIN -->
+
+            <div
+                class="vital-card"
+                id="proteinCard"
+            >
+
+                <h3>
+                    Urine Protein
+                </h3>
+
+                <p id="proteinValue">
+                    --
+                </p>
+
+            </div>
+
+
+            <!-- BILIRUBIN -->
+
+            <div
+                class="vital-card"
+                id="bilirubinCard"
+            >
+
+                <h3>
+                    Bilirubin
+                </h3>
+
+                <p id="bilirubinValue">
+                    -- mg/dL
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- ================================= -->
+        <!-- RISK STATUS -->
+        <!-- ================================= -->
+
+        <div
+            id="riskStatus"
+            class="risk-status"
+        >
+
+            Waiting for reading...
+
+        </div>
+
+
+        <p class="updated">
+
+            Last updated:
+
+            <span id="lastUpdated">
+                --
+            </span>
+
+        </p>
+
+    </div>
+
+</div>
+
+
+<!-- ================================================= -->
+<!-- FIREBASE -->
+<!-- ================================================= -->
+
+<script type="module">
+
+    /*
+    ====================================================
+    FIREBASE MODULE IMPORTS
+    ====================================================
+    */
+
+    import {
+        initializeApp
+    }
+    from
+    "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+
+
+    import {
+        getDatabase,
+        ref,
+        onValue
+    }
+    from
+    "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
+
+
+    /*
+    ====================================================
+    FIREBASE CONFIGURATION
+    ====================================================
+
+    These values identify your Firebase project.
+
+    IMPORTANT:
+    These are Web SDK configuration values.
+    They are NOT your private service-account key.
+
+    ====================================================
+    */
+
+    const firebaseConfig = {
+
+        databaseURL:
+            "https://maternal-health-iot-default-rtdb.firebaseio.com/",
+
+        projectId:
+            "maternal-health-iot"
+
+    };
+
+
+    /*
+    ====================================================
+    INITIALIZE FIREBASE
+    ====================================================
+    */
+
+    const app =
+        initializeApp(firebaseConfig);
+
+
+    const database =
+        getDatabase(app);
+
+
+    /*
+    ====================================================
+    MONITORING STATE
+    ====================================================
+    */
+
+    let monitoringStarted = false;
+
+
+    let currentPatientRef = null;
+
+
+    /*
+    ====================================================
+    START MONITORING
+    ====================================================
+    */
+
+    window.startMonitoring = function () {
+
+
+        const patientId =
+            document
+                .getElementById("patientId")
+                .value
+                .trim();
+
+
+        const patientName =
+            document
+                .getElementById("patientName")
+                .value
+                .trim();
+
+
+        const patientType =
+            document
+                .getElementById("patientType")
+                .value;
+
+
+        /*
+        ----------------------------------------------
+        Validate patient information
+        ----------------------------------------------
+        */
+
+        if (!patientId || !patientName) {
+
+            alert(
+                "Please enter Patient ID and Patient Name."
+            );
+
+            return;
+
+        }
+
+
+        /*
+        ----------------------------------------------
+        Display patient information
+        ----------------------------------------------
+        */
+
+        document
+            .getElementById("displayId")
+            .textContent =
+            patientId;
+
+
+        document
+            .getElementById("displayName")
+            .textContent =
+            patientName;
+
+
+        document
+            .getElementById("displayType")
+            .textContent =
+            patientType;
+
+
+        /*
+        ----------------------------------------------
+        Show monitoring dashboard
+        ----------------------------------------------
+        */
+
+        document
+            .getElementById("monitoring")
+            .classList
+            .remove("hidden");
+
+
+        /*
+        ----------------------------------------------
+        Prevent duplicate listeners
+        ----------------------------------------------
+        */
+
+        if (currentPatientRef !== null) {
+
+            currentPatientRef = null;
+
+        }
+
+
+        /*
+        ----------------------------------------------
+        Firebase patient reference
+        ----------------------------------------------
+        */
+
+        currentPatientRef =
+            ref(
+                database,
+                `patients/${patientId}`
+            );
+
+
+        /*
+        ----------------------------------------------
+        Listen for Firebase changes
+        ----------------------------------------------
+        */
+
+        onValue(
+            currentPatientRef,
+            (snapshot) => {
+
+                const reading =
+                    snapshot.val();
+
+
+                /*
+                No reading available yet
+                */
+
+                if (!reading) {
+
+                    document
+                        .getElementById("riskStatus")
+                        .textContent =
+                        "Waiting for sensor data...";
+
+                    return;
+
+                }
+
+
+                /*
+                Update dashboard
+                */
+
+                updateDashboard(
+                    reading
+                );
+
+            }
+        );
+
+
+        monitoringStarted = true;
+
+    };
+
+
+    /*
+    ====================================================
+    UPDATE DASHBOARD
+    ====================================================
+    */
+
+    function updateDashboard(reading) {
+
+
+        /*
+        ----------------------------------------------
+        Update Blood Pressure
+        ----------------------------------------------
+        */
+
+        document
+            .getElementById("bpValue")
+            .textContent =
+            `${reading.bp_systolic} / ${reading.bp_diastolic} mmHg`;
+
+
+        /*
+        ----------------------------------------------
+        Update SpO2
+        ----------------------------------------------
+        */
+
+        document
+            .getElementById("spo2Value")
+            .textContent =
+            `${reading.spo2}%`;
+
+
+        /*
+        ----------------------------------------------
+        Update Protein
+        ----------------------------------------------
+        */
+
+        document
+            .getElementById("proteinValue")
+            .textContent =
+            reading.urine_protein;
+
+
+        /*
+        ----------------------------------------------
+        Update Bilirubin
+        ----------------------------------------------
+        */
+
+        document
+            .getElementById("bilirubinValue")
+            .textContent =
+            `${reading.bilirubin} mg/dL`;
+
+
+        /*
+        ----------------------------------------------
+        Highlight abnormal values
+        ----------------------------------------------
+        */
+
+        updateRiskHighlighting(
+            reading
+        );
+
+
+        /*
+        ----------------------------------------------
+        Timestamp
+        ----------------------------------------------
+        */
+
+        document
+            .getElementById("lastUpdated")
+            .textContent =
+            reading.timestamp || "--";
+
+    }
+
+
+    /*
+    ====================================================
+    RISK HIGHLIGHTING
+    ====================================================
+    */
+
+    function updateRiskHighlighting(reading) {
+
+
+        /*
+        Reset previous red highlighting
+        */
+
+        resetCards();
+
+
+        const risks = [];
+
+
+        /*
+        ================================================
+        BLOOD PRESSURE
+        ================================================
+        */
+
+        if (
+            reading.bp_systolic > 140 ||
+            reading.bp_diastolic > 90
+        ) {
+
+            risks.push(
+                "⚠️ High Blood Pressure"
+            );
+
+
+            document
+                .getElementById("bpCard")
+                .classList
+                .add("abnormal");
+
+        }
+
+
+        /*
+        ================================================
+        SPO2
+        ================================================
+        */
+
+        if (
+            reading.spo2 < 94
+        ) {
+
+            risks.push(
+                "⚠️ Low Oxygen Level"
+            );
+
+
+            document
+                .getElementById("spo2Card")
+                .classList
+                .add("abnormal");
+
+        }
+
+
+        /*
+        ================================================
+        URINE PROTEIN
+        ================================================
+        */
+
+        if (
+            reading.urine_protein === "+" ||
+            reading.urine_protein === "++"
+        ) {
+
+            risks.push(
+                "⚠️ Proteinuria Risk"
+            );
+
+
+            document
+                .getElementById("proteinCard")
+                .classList
+                .add("abnormal");
+
+        }
+
+
+        /*
+        ================================================
+        BILIRUBIN
+        ================================================
+        */
+
+        if (
+            reading.bilirubin > 12
+        ) {
+
+            risks.push(
+                "⚠️ Neonatal Jaundice Risk"
+            );
+
+
+            document
+                .getElementById("bilirubinCard")
+                .classList
+                .add("abnormal");
+
+        }
+
+
+        /*
+        ================================================
+        DISPLAY RISK STATUS
+        ================================================
+        */
+
+        const riskStatus =
+            document
+                .getElementById("riskStatus");
+
+
+        /*
+        NORMAL
+        */
+
+        if (risks.length === 0) {
+
+            riskStatus.textContent =
+                "🟢 NORMAL — No immediate risk detected";
+
+
+            riskStatus.className =
+                "risk-status normal";
+
+        }
+
+
+        /*
+        ABNORMAL
+        */
+
+        else {
+
+            riskStatus.innerHTML =
+                "🚨 HEALTH ALERT<br><br>" +
+                risks.join("<br>");
+
+
+            riskStatus.className =
+                "risk-status danger";
+
+        }
+
+    }
+
+
+    /*
+    ====================================================
+    RESET ABNORMAL CARDS
+    ====================================================
+    */
+
+    function resetCards() {
+
+        document
+            .querySelectorAll(".vital-card")
+            .forEach(
+                card => {
+
+                    card.classList
+                        .remove("abnormal");
+
+                }
+            );
+
+    }
+
+</script>
+
+</body>
+
+</html>
