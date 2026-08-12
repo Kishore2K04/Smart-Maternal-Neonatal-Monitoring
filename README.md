@@ -322,3 +322,18 @@ The implementation prioritizes demonstrating the complete monitoring pipeline us
 This software is intended for educational and prototyping purposes only.
 
 The simulated readings, thresholds, and risk labels should not be used for medical diagnosis, treatment decisions, or emergency response.
+```
+
+## 📄 License
+
+MIT License
+
+---
+
+## 👨‍💻 Author
+
+Developed by **Kishore S**
+
+Computer Science Engineering Student
+
+AI & Full-Stack Developer
